@@ -3,6 +3,14 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     concat: {
+      options: { 
+        separator: ';', 
+        sourceMap: true
+      },
+      dist: {
+        src: ['public/client/*.js'],
+        dest: 'public/dist/<%= pkg.name %>.js'
+      }
     },
 
     mochaTest: {
@@ -21,15 +29,35 @@ module.exports = function(grunt) {
     },
 
     uglify: {
+      options: {
+        sourceMap: true,
+        sourceMapIncludeSources: true,
+        // sourceMapIn: 'public/dist/<%= pkg.name %>.js.map'
+      },
+      target: {
+        files: { 
+          'public/dist/<%= pkg.name %>.min.js': ['public/client/**/*.js']
+        }
+      }
     },
 
     eslint: {
       target: [
         // Add list of files to lint here
+        'client/**/*.js'
       ]
     },
 
     cssmin: {
+      target: {
+        files: [{
+          expand: true,
+          cwd: 'release/css',
+          src: ['*.css', '!*.min.css'],
+          dest: 'release/css',
+          ext: '.min.css'
+        }]
+      }
     },
 
     watch: {
@@ -64,15 +92,15 @@ module.exports = function(grunt) {
     }
   });
 
-  grunt.loadNpmTasks('grunt-contrib-uglify');
-  grunt.loadNpmTasks('grunt-contrib-watch');
-  grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-cssmin');
-  grunt.loadNpmTasks('grunt-eslint');
-  grunt.loadNpmTasks('grunt-mocha-test');
-  grunt.loadNpmTasks('grunt-shell');
-  grunt.loadNpmTasks('grunt-nodemon');
-  grunt.loadNpmTasks('grunt-git');
+  grunt.loadNpmTasks('grunt-contrib-uglify'); //done
+  grunt.loadNpmTasks('grunt-contrib-watch'); //don
+  grunt.loadNpmTasks('grunt-contrib-concat'); //don
+  grunt.loadNpmTasks('grunt-contrib-cssmin'); //don
+  grunt.loadNpmTasks('grunt-eslint'); //don
+  grunt.loadNpmTasks('grunt-mocha-test'); //don
+  grunt.loadNpmTasks('grunt-shell'); 
+  grunt.loadNpmTasks('grunt-nodemon'); //don
+  grunt.loadNpmTasks('grunt-git'); //don
 
   grunt.registerTask('server-dev', function (target) {
     grunt.task.run([ 'nodemon', 'watch' ]);
@@ -86,7 +114,7 @@ module.exports = function(grunt) {
     'mochaTest'
   ]);
 
-  grunt.registerTask('build', [
+  grunt.registerTask('build', [ 'concat', 'uglify'
   ]);
 
   grunt.registerTask('upload', function(n) {
@@ -95,11 +123,18 @@ module.exports = function(grunt) {
     } else {
       grunt.task.run([ 'server-dev' ]);
     }
+    if (!grunt.eslint.options.quiet) {
+      //fail the linter, stop everything! 
+      grunt.fail.warn('You failed the linter, make your code better and try again, buddy');
+    }
   });
 
-  grunt.registerTask('deploy', [
+  grunt.registerTask('deploy', [ 'mochaTest', 'eslint', 'cssmin'
     // add your deploy tasks here
   ]);
 
+  grunt.registerTask('prod', ['gitpush']);
 
 };
+// var prod = grunt.option('prod');
+// grunt.registerTask('gitpush');
