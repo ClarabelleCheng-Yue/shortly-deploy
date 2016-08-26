@@ -1,5 +1,6 @@
 var db = require('../config');
 var crypto = require('crypto');
+var mongodb = require('mongodb');
 
 var Link = db.Model.extend({
   tableName: 'urls',
@@ -17,7 +18,3 @@ var Link = db.Model.extend({
 });
 
 module.exports = Link;
-
-
-//this is a change
-//this is another change
